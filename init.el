@@ -194,20 +194,20 @@
   (local-set-key (kbd "C-c C-k" ) 'uncomment-region))
 
 ;; jsx Stuff
-;; (flycheck-define-checker jsxhint-checker
-;;   "A JSX syntax and style checker based on JSXHint."
 
-;;   :command ("jsxhint" source)
-;;   :error-patterns
-;;   ((error line-start (1+ nonl) ": line " line ", col " column ", " (message) line-end))
-;;   :modes (web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (equal web-mode-content-type "jsx")
+              ;; enable flycheck
+              (flycheck-mode))))
 
-;; (add-hook 'web-mode-hook
-;;           (lambda ()
-;;             (when (equal web-mode-content-type "jsx")
-;;               ;; enable flycheck
-;;               (flycheck-select-checker 'jsxhint-checker)
-;;               (flycheck-mode))))
+;; disable jshint since we prefer eslint checking
+(setq-default flycheck-disabled-checkers
+  (append flycheck-disabled-checkers
+    '(javascript-jshint)))
+
+;; use eslint with web-mode for jsx files
+(flycheck-add-mode 'javascript-eslint 'web-mode)
 
 (add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
 (defadvice web-mode-highlight-part (around tweak-jsx activate)
