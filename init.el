@@ -22,6 +22,7 @@
   )
 
 (setenv "SSH_ASKPASS" "git-gui--askpass")
+(setq visible-bell 1)
 
 ;;;Windows backup
 (setq version-control t ;; Use version numbers for backups.
@@ -63,6 +64,8 @@
 (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+(setq web-mode-content-types-alist
+  '(("jsx" . "\\.js[x]?\\'")))
 
 ;;Package
 (require 'package)
@@ -76,25 +79,26 @@
 ;;Loading
 (load-library "valgrind")
 
-;;; yasnippet
-;;; should be loaded before auto complete so that they can work together
-(require 'yasnippet)
-(yas-global-mode 1)
+;; Company
+(add-hook 'after-init-hook 'global-company-mode)
+(eval-after-load "company"
+  '(add-to-list 'company-backends 'company-anaconda))
+(add-hook 'python-mode-hook 'anaconda-mode)
+(add-hook 'python-mode-hook 'flycheck-mode)
+(setq company-idle-delay 0)
 
-;;; auto complete mod
-;;; should be loaded after yasnippet so that they can work together
-(require 'auto-complete-config)
-(add-to-list 'ac-dictionary-directories "~/.emacs.d/ac-dict")
-(ac-config-default)
-;;; set the trigger key so that it can work together with yasnippet on tab key,
-;;; if the word exists in yasnippet, pressing tab will cause yasnippet to
-;;; activate, otherwise, auto-complete will
-(ac-set-trigger-key "TAB")
-(ac-set-trigger-key "<tab>")
+(defun text-mode-hook-setup ()
+  ;; make `company-backends' local is critcal
+  ;; or else, you will have completion in every major mode, that's very annoying!
+  (make-local-variable 'company-backends)
 
-;;;;More autocomplete
-;; (require 'auto-complete-auctex)
-(add-to-list 'ac-sources 'ac-source-c-headers)
+  ;; company-ispell is the plugin to complete words
+  (add-to-list 'company-backends 'company-ispell)
+  (setq company-ispell-available t)
+  (setq company-ispell-dictionary (file-truename "~/.emacs.d/misc/english-words.txt")))
+
+(add-hook 'text-mode-hook 'text-mode-hook-setup)
+(add-hook 'org-mode-hook 'text-mode-hook-setup)
 
 ;;;Markdown mode
 ;;(require 'markdown-mode)
@@ -194,7 +198,7 @@
   (local-set-key (kbd "C-c C-k" ) 'uncomment-region))
 
 ;; jsx Stuff
-
+(require 'flycheck)
 (add-hook 'web-mode-hook
           (lambda ()
             (when (equal web-mode-content-type "jsx")
@@ -202,9 +206,9 @@
               (flycheck-mode))))
 
 ;; disable jshint since we prefer eslint checking
-(setq-default flycheck-disabled-checkers
-  (append flycheck-disabled-checkers
-    '(javascript-jshint)))
+;; (setq-default flycheck-disabled-checkers
+;;   (append flycheck-disabled-checkers
+;;     '(javascript-jshint)))
 
 ;; use eslint with web-mode for jsx files
 (flycheck-add-mode 'javascript-eslint 'web-mode)
@@ -261,13 +265,11 @@
 ;;Hooks
 (add-hook 'c++-mode-hook 'mp-add-cpp-keys)
 (add-hook 'org-mode-hook 'my-org-init)
+(add-hook 'org-mode-hook 'flyspell-mode)
 (add-hook 'haskell-mode-hook 'haskell-indentation-mode)
 
 ;;Orgmode
 (defun my-org-init ()
-  (require 'typopunct)
-  (typopunct-change-language 'english)
-  (typopunct-mode 1)
   (visual-line-mode 1))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
