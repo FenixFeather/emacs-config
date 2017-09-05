@@ -1,8 +1,12 @@
 # Compiled
 *.elc
+*.pyc
 
 # Packaging
 .cask
 
 # Backup
 *~
+ac-comphist.dat
+auto-save-list/
+ido.last
