@@ -203,7 +203,11 @@
                       '(javascript-jshint json-python-json javascript-jshint
 					  javascript-gjslint javascript-jscs)))
 
-(add-hook 'js2-mode-hook 'flycheck-mode)
+(defun my-js2-mode-hook ()
+  (flycheck-mode)
+  (setq js2-basic-offset 2)
+  )
+(add-hook 'js2-mode-hook 'my-js2-mode-hook)
 
 ;; use eslint with web-mode for jsx files
 (flycheck-add-mode 'javascript-eslint 'js2-mode)
