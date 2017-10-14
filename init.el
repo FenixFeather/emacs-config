@@ -49,12 +49,6 @@
 
 (add-hook 'before-save-hook  'force-backup-of-buffer)
 
-;;Python
-;;;Python mode
-(add-to-list 'load-path "~/.emacs.d/python-mode")
-(setq py-install-directory "~/.emacs.d/python-mode")
-(require 'python-mode)
-
 ;; Web mode
 (require 'web-mode)
 (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
@@ -64,8 +58,9 @@
 (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-(setq web-mode-content-types-alist
-  '(("jsx" . "\\.js[x]?\\'")))
+(add-to-list 'auto-mode-alist '("\\.js\\'" . rjsx-mode))
+(add-to-list 'auto-mode-alist '("\\.eslintrc.*$" . json-mode))
+(add-to-list 'auto-mode-alist '("\\.babelrc$" . json-mode))
 
 ;;Package
 (require 'package)
@@ -199,26 +194,19 @@
 
 ;; jsx Stuff
 (require 'flycheck)
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (equal web-mode-content-type "jsx")
-              ;; enable flycheck
-              (flycheck-mode))))
 
 ;; disable jshint since we prefer eslint checking
-;; (setq-default flycheck-disabled-checkers
-;;   (append flycheck-disabled-checkers
-;;     '(javascript-jshint)))
+(setq js2-mode-show-parse-errors nil)
+(setq js2-mode-show-strict-warnings nil)
+(setq-default flycheck-disabled-checkers
+              (append flycheck-disabled-checkers
+                      '(javascript-jshint json-python-json javascript-jshint
+					  javascript-gjslint javascript-jscs)))
+
+(add-hook 'js2-mode-hook 'flycheck-mode)
 
 ;; use eslint with web-mode for jsx files
-(flycheck-add-mode 'javascript-eslint 'web-mode)
-
-(add-to-list 'auto-mode-alist '("\\.jsx$" . web-mode))
-(defadvice web-mode-highlight-part (around tweak-jsx activate)
-  (if (equal web-mode-content-type "jsx")
-      (let ((web-mode-enable-part-face nil))
-        ad-do-it)
-    ad-do-it))
+(flycheck-add-mode 'javascript-eslint 'js2-mode)
 
 ;;LaTeX Stuff
 ;; (setq TeX-auto-save t)
